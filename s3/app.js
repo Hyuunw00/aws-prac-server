@@ -35,6 +35,30 @@ const sequelize = new Sequelize(
   }
 );
 
+// 기존 테이블 사용 - 컬럼 명시적 정의
+const Image = sequelize.define(
+  "Image",
+  {
+    id: {
+      type: Sequelize.INTEGER,
+      primaryKey: true,
+      autoIncrement: true,
+    },
+    name: {
+      type: Sequelize.STRING,
+      allowNull: true,
+    },
+    url: {
+      type: Sequelize.TEXT,
+      allowNull: true,
+    },
+  },
+  {
+    tableName: "images",
+    timestamps: true, // createdAt, updatedAt 자동 관리
+  }
+);
+
 app.get("/", async (req, res) => {
   try {
     await sequelize.authenticate();
@@ -46,8 +70,39 @@ app.get("/", async (req, res) => {
   }
 });
 
-app.post("/upload", upload.array("photos"), (req, res) => {
-  res.send(req.files);
+app.post("/upload", upload.array("photos"), async (req, res) => {
+  try {
+    const uploadedFiles = [];
+
+    for (const file of req.files) {
+      const fileRecord = await Image.create({
+        name: file.originalname,
+        url: file.location,
+      });
+      console.log("fileRecord", fileRecord);
+
+      uploadedFiles.push({
+        id: fileRecord.id,
+        name: file.originalname,
+        url: file.location,
+        createdAt: fileRecord.createdAt,
+        updatedAt: fileRecord.updatedAt,
+      });
+    }
+
+    res.json({
+      success: true,
+      message: "파일 업로드 성공",
+      count: uploadedFiles.length,
+      files: uploadedFiles,
+    });
+  } catch (error) {
+    console.error("Error saving to database:", error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to save file information to database",
+    });
+  }
 });
 
 app.listen(port, async () => {
