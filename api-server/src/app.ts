@@ -16,7 +16,7 @@ const app = express();
 const corsOptions = {
   origin: [
     "http://localhost:5173", // 클라이언트 로컬 개발 도메인
-    "https://theo-test.com", // 클라이언트 프로덕션 도메인
+    "https://web.theo-test.com", // 클라이언트 프로덕션 도메인
   ],
   credentials: true, // 쿠키 전송 허용
 };
