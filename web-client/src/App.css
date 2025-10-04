@@ -1,0 +1,271 @@
+.image-gallery {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 40px 20px;
+}
+
+.gallery-header {
+  text-align: center;
+  margin-bottom: 50px;
+  animation: fadeIn 0.5s ease-in;
+}
+
+h1 {
+  font-size: 3rem;
+  color: white;
+  margin-bottom: 10px;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+  font-weight: 700;
+  letter-spacing: -1px;
+}
+
+.subtitle {
+  color: rgba(255,255,255,0.9);
+  font-size: 1.1rem;
+  font-weight: 300;
+}
+
+.error-message, .success-message {
+  max-width: 600px;
+  margin: 20px auto;
+  padding: 15px 20px;
+  border-radius: 8px;
+  text-align: center;
+  animation: slideDown 0.3s ease-out;
+}
+
+.error-message {
+  background-color: #ff4757;
+  color: white;
+  border: 1px solid rgba(255,255,255,0.2);
+}
+
+.success-message {
+  background-color: #00b894;
+  color: white;
+  border: 1px solid rgba(255,255,255,0.2);
+}
+
+.upload-section {
+  text-align: center;
+  margin-bottom: 50px;
+}
+
+.upload-area {
+  background: white;
+  border-radius: 20px;
+  padding: 40px;
+  max-width: 500px;
+  margin: 0 auto;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+  transition: transform 0.3s ease;
+}
+
+.upload-area:hover {
+  transform: translateY(-5px);
+}
+
+.upload-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 15px 35px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-radius: 30px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  border: none;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+}
+
+.upload-button:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+}
+
+.upload-icon {
+  font-size: 20px;
+}
+
+.loading-container {
+  text-align: center;
+  padding: 60px;
+}
+
+.loading-spinner {
+  width: 50px;
+  height: 50px;
+  border: 4px solid rgba(255,255,255,0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 20px;
+}
+
+.loading-text {
+  color: white;
+  font-size: 1.1rem;
+}
+
+.images-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 30px;
+  margin-top: 40px;
+  animation: fadeIn 0.5s ease-in;
+}
+
+.image-card {
+  background: white;
+  border-radius: 15px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+  transition: all 0.3s ease;
+  animation: slideUp 0.4s ease-out;
+}
+
+.image-card:hover {
+  transform: translateY(-10px) scale(1.02);
+  box-shadow: 0 15px 40px rgba(0,0,0,0.2);
+}
+
+.image-wrapper {
+  position: relative;
+  overflow: hidden;
+  height: 220px;
+  background: #f0f0f0;
+}
+
+.image-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.image-card:hover img {
+  transform: scale(1.1);
+}
+
+.image-info {
+  padding: 20px;
+}
+
+.image-name {
+  font-size: 15px;
+  color: #2c3e50;
+  margin: 0 0 15px 0;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.image-date {
+  font-size: 12px;
+  color: #95a5a6;
+  margin-bottom: 15px;
+}
+
+.image-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.update-btn,
+.delete-btn {
+  flex: 1;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+}
+
+.update-btn {
+  background: linear-gradient(135deg, #3498db, #2980b9);
+  color: white;
+}
+
+.delete-btn {
+  background: linear-gradient(135deg, #e74c3c, #c0392b);
+  color: white;
+}
+
+.update-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(52, 152, 219, 0.4);
+}
+
+.delete-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(231, 76, 60, 0.4);
+}
+
+.empty-state {
+  text-align: center;
+  padding: 80px 20px;
+}
+
+.empty-icon {
+  font-size: 80px;
+  margin-bottom: 20px;
+  opacity: 0.5;
+}
+
+.empty-title {
+  color: white;
+  font-size: 1.5rem;
+  margin-bottom: 10px;
+}
+
+.empty-text {
+  color: rgba(255,255,255,0.8);
+  font-size: 1rem;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
