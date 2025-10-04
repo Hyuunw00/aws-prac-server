@@ -2,6 +2,15 @@
 
 AWS 서비스를 활용한 풀스택 이미지 갤러리 애플리케이션
 
+## 시연 영상
+https://youtu.be/R0_ZYtn9hKM
+
+
+## 작성한 글
+1. https://velog.io/@khw090/AWS-%EA%B0%80%EC%9D%B4%EB%93%9C-%ED%95%B5%EC%8B%AC-%EA%B8%B0%EB%8A%A5-%EC%A0%95%EB%A6%AC-462gwvax
+2. https://velog.io/@khw090/AWS%EB%A5%BC-%ED%99%9C%EC%9A%A9%ED%95%9C-%EA%B0%84%EB%8B%A8%ED%95%9C-%EC%84%9C%EB%B9%84%EC%8A%A4-%EB%B0%B0%ED%8F%AC
+
+
 ## 🎯 프로젝트 개요
 
 이미지 업로드, 조회, 수정, 삭제 기능을 제공하는 풀스택 웹 애플리케이션입니다. AWS의 다양한 서비스를 활용하여 확장 가능하고 안정적인 클라우드 인프라를 구축했습니다.
