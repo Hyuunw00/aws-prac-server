@@ -46,6 +46,7 @@ const data_source_1 = require("./data-source");
 const Image_1 = require("./entity/Image");
 dotenv.config();
 const app = (0, express_1.default)();
+app.use(express_1.default.json());
 const port = 80;
 const s3 = new client_s3_1.S3Client({
     credentials: {
@@ -76,7 +77,7 @@ app.get("/", async (_req, res) => {
         res.status(500).send("DB 연결 X");
     }
 });
-app.post("/upload", upload.array("photos"), async (req, res) => {
+app.post("/images", upload.array("photos"), async (req, res) => {
     try {
         if (!data_source_1.AppDataSource.isInitialized) {
             await data_source_1.AppDataSource.initialize();
@@ -109,6 +110,151 @@ app.post("/upload", upload.array("photos"), async (req, res) => {
         res.status(500).json({
             success: false,
             error: "Failed to save file information to database",
+        });
+    }
+});
+app.get("/images", async (_req, res) => {
+    try {
+        if (!data_source_1.AppDataSource.isInitialized) {
+            await data_source_1.AppDataSource.initialize();
+        }
+        const images = await data_source_1.AppDataSource.manager.find(Image_1.Image, {
+            order: {
+                createdAt: "DESC",
+            },
+        });
+        res.json({
+            success: true,
+            count: images.length,
+            images: images,
+        });
+    }
+    catch (error) {
+        console.error("Error fetching images:", error);
+        res.status(500).json({
+            success: false,
+            error: "Failed to fetch images",
+        });
+    }
+});
+app.get("/images/:id", async (req, res) => {
+    try {
+        if (!data_source_1.AppDataSource.isInitialized) {
+            await data_source_1.AppDataSource.initialize();
+        }
+        const id = parseInt(req.params.id);
+        const image = await data_source_1.AppDataSource.manager.findOne(Image_1.Image, {
+            where: { id },
+        });
+        if (!image) {
+            return res.status(404).json({
+                success: false,
+                error: "Image not found",
+            });
+        }
+        res.json({
+            success: true,
+            image: image,
+        });
+    }
+    catch (error) {
+        console.error("Error fetching image:", error);
+        res.status(500).json({
+            success: false,
+            error: "Failed to fetch image",
+        });
+    }
+});
+app.put("/images/:id", upload.single("photo"), async (req, res) => {
+    try {
+        if (!data_source_1.AppDataSource.isInitialized) {
+            await data_source_1.AppDataSource.initialize();
+        }
+        const id = parseInt(req.params.id);
+        const file = req.file;
+        if (!file) {
+            return res.status(400).json({
+                success: false,
+                error: "No image file provided",
+            });
+        }
+        const image = await data_source_1.AppDataSource.manager.findOne(Image_1.Image, {
+            where: { id },
+        });
+        if (!image) {
+            return res.status(404).json({
+                success: false,
+                error: "Image not found",
+            });
+        }
+        // 기존 S3 파일 삭제
+        const oldKey = image.url.split("/").pop();
+        if (oldKey) {
+            const deleteParams = {
+                Bucket: process.env.AWS_S3_BUCKET,
+                Key: oldKey,
+            };
+            const command = new client_s3_1.DeleteObjectCommand(deleteParams);
+            await s3.send(command);
+        }
+        // 새 파일 정보로 업데이트
+        image.name = file.originalname;
+        image.url = file.location;
+        const updatedImage = await data_source_1.AppDataSource.manager.save(image);
+        res.json({
+            success: true,
+            message: "Image updated successfully",
+            image: updatedImage,
+        });
+    }
+    catch (error) {
+        console.error("Error updating image:", error);
+        res.status(500).json({
+            success: false,
+            error: "Failed to update image",
+        });
+    }
+});
+app.delete("/images/:id", async (req, res) => {
+    try {
+        if (!data_source_1.AppDataSource.isInitialized) {
+            await data_source_1.AppDataSource.initialize();
+        }
+        const id = parseInt(req.params.id);
+        const image = await data_source_1.AppDataSource.manager.findOne(Image_1.Image, {
+            where: { id },
+        });
+        if (!image) {
+            return res.status(404).json({
+                success: false,
+                error: "Image not found",
+            });
+        }
+        const key = image.url.split("/").pop();
+        if (key) {
+            const deleteParams = {
+                Bucket: process.env.AWS_S3_BUCKET,
+                Key: key,
+            };
+            const command = new client_s3_1.DeleteObjectCommand(deleteParams);
+            await s3.send(command);
+        }
+        await data_source_1.AppDataSource.manager.remove(image);
+        res.json({
+            success: true,
+            message: "Image deleted successfully",
+            deletedImage: {
+                id: id,
+                name: image.name,
+                url: image.url,
+            },
+        });
+    }
+    catch (error) {
+        console.error("Error deleting image:", error);
+        res.status(500).json({
+            success: false,
+            error: "Failed to delete image",
         });
     }
 });
