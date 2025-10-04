@@ -146,45 +146,66 @@ app.get("/images/:id", async (req: Request, res: Response) => {
   }
 });
 
-app.put("/images/:id", async (req: Request, res: Response) => {
-  try {
-    if (!AppDataSource.isInitialized) {
-      await AppDataSource.initialize();
-    }
+app.put("/images/:id", 
+  upload.single("photo"),
+  async (req: Request, res: Response) => {
+    try {
+      if (!AppDataSource.isInitialized) {
+        await AppDataSource.initialize();
+      }
 
-    const id = parseInt(req.params.id);
-    const { name } = req.body;
+      const id = parseInt(req.params.id);
+      const file = req.file as Express.MulterS3.File;
 
-    const image = await AppDataSource.manager.findOne(Image, {
-      where: { id },
-    });
+      if (!file) {
+        return res.status(400).json({
+          success: false,
+          error: "No image file provided",
+        });
+      }
 
-    if (!image) {
-      return res.status(404).json({
+      const image = await AppDataSource.manager.findOne(Image, {
+        where: { id },
+      });
+
+      if (!image) {
+        return res.status(404).json({
+          success: false,
+          error: "Image not found",
+        });
+      }
+
+      // 기존 S3 파일 삭제
+      const oldKey = image.url.split("/").pop();
+      if (oldKey) {
+        const deleteParams = {
+          Bucket: process.env.AWS_S3_BUCKET!,
+          Key: oldKey,
+        };
+        const command = new DeleteObjectCommand(deleteParams);
+        await s3.send(command);
+      }
+
+      // 새 파일 정보로 업데이트
+      image.name = file.originalname;
+      image.url = file.location;
+
+      const updatedImage = await AppDataSource.manager.save(image);
+
+      res.json({
+        success: true,
+        message: "Image updated successfully",
+        image: updatedImage,
+      });
+    } catch (error) {
+      console.error("Error updating image:", error);
+      res.status(500).json({
         success: false,
-        error: "Image not found",
+        error: "Failed to update image",
       });
     }
-
-    if (name) {
-      image.name = name;
-    }
-
-    const updatedImage = await AppDataSource.manager.save(image);
-
-    res.json({
-      success: true,
-      message: "Image updated successfully",
-      image: updatedImage,
-    });
-  } catch (error) {
-    console.error("Error updating image:", error);
-    res.status(500).json({
-      success: false,
-      error: "Failed to update image",
-    });
   }
-});
+);
 
 app.delete("/images/:id", async (req: Request, res: Response) => {
   try {
