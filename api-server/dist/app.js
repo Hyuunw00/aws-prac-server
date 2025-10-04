@@ -40,12 +40,22 @@ require("reflect-metadata");
 const dotenv = __importStar(require("dotenv"));
 const client_s3_1 = require("@aws-sdk/client-s3");
 const express_1 = __importDefault(require("express"));
+const cors_1 = __importDefault(require("cors"));
 const multer_1 = __importDefault(require("multer"));
 const multer_s3_1 = __importDefault(require("multer-s3"));
 const data_source_1 = require("./data-source");
 const Image_1 = require("./entity/Image");
 dotenv.config();
 const app = (0, express_1.default)();
+// CORS 설정 - 특정 origin만 허용
+const corsOptions = {
+    origin: [
+        "http://localhost:5173", // 클라이언트 로컬 개발 도메인
+        "https://theo-test.com", // 클라이언트 프로덕션 도메인
+    ],
+    credentials: true, // 쿠키 전송 허용
+};
+app.use((0, cors_1.default)(corsOptions));
 app.use(express_1.default.json());
 const port = 80;
 const s3 = new client_s3_1.S3Client({

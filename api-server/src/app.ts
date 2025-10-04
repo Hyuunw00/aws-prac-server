@@ -2,6 +2,7 @@ import "reflect-metadata";
 import * as dotenv from "dotenv";
 import { S3Client, DeleteObjectCommand } from "@aws-sdk/client-s3";
 import express, { Request, Response } from "express";
+import cors from "cors";
 import multer from "multer";
 import multerS3 from "multer-s3";
 import { AppDataSource } from "./data-source";
@@ -10,6 +11,17 @@ import { Image } from "./entity/Image";
 dotenv.config();
 
 const app = express();
+
+// CORS 설정 - 특정 origin만 허용
+const corsOptions = {
+  origin: [
+    "http://localhost:5173", // 클라이언트 로컬 개발 도메인
+    "https://theo-test.com", // 클라이언트 프로덕션 도메인
+  ],
+  credentials: true, // 쿠키 전송 허용
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
 const port = 80;
 
@@ -146,7 +158,8 @@ app.get("/images/:id", async (req: Request, res: Response) => {
   }
 });
 
-app.put("/images/:id", 
+app.put(
+  "/images/:id",
   upload.single("photo"),
   async (req: Request, res: Response) => {
     try {
