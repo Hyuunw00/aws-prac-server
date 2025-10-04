@@ -1,6 +1,6 @@
 import "reflect-metadata";
 import * as dotenv from "dotenv";
-import { S3Client } from "@aws-sdk/client-s3";
+import { S3Client, DeleteObjectCommand } from "@aws-sdk/client-s3";
 import express, { Request, Response } from "express";
 import multer from "multer";
 import multerS3 from "multer-s3";
@@ -10,6 +10,7 @@ import { Image } from "./entity/Image";
 dotenv.config();
 
 const app = express();
+app.use(express.json());
 const port = 80;
 
 const s3 = new S3Client({
@@ -44,7 +45,7 @@ app.get("/", async (_req: Request, res: Response) => {
 });
 
 app.post(
-  "/upload",
+  "/images",
   upload.array("photos"),
   async (req: Request, res: Response) => {
     try {
@@ -87,6 +88,151 @@ app.post(
     }
   }
 );
+
+app.get("/images", async (_req: Request, res: Response) => {
+  try {
+    if (!AppDataSource.isInitialized) {
+      await AppDataSource.initialize();
+    }
+
+    const images = await AppDataSource.manager.find(Image, {
+      order: {
+        createdAt: "DESC",
+      },
+    });
+
+    res.json({
+      success: true,
+      count: images.length,
+      images: images,
+    });
+  } catch (error) {
+    console.error("Error fetching images:", error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to fetch images",
+    });
+  }
+});
+
+app.get("/images/:id", async (req: Request, res: Response) => {
+  try {
+    if (!AppDataSource.isInitialized) {
+      await AppDataSource.initialize();
+    }
+
+    const id = parseInt(req.params.id);
+    const image = await AppDataSource.manager.findOne(Image, {
+      where: { id },
+    });
+
+    if (!image) {
+      return res.status(404).json({
+        success: false,
+        error: "Image not found",
+      });
+    }
+
+    res.json({
+      success: true,
+      image: image,
+    });
+  } catch (error) {
+    console.error("Error fetching image:", error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to fetch image",
+    });
+  }
+});
+
+app.put("/images/:id", async (req: Request, res: Response) => {
+  try {
+    if (!AppDataSource.isInitialized) {
+      await AppDataSource.initialize();
+    }
+
+    const id = parseInt(req.params.id);
+    const { name } = req.body;
+
+    const image = await AppDataSource.manager.findOne(Image, {
+      where: { id },
+    });
+
+    if (!image) {
+      return res.status(404).json({
+        success: false,
+        error: "Image not found",
+      });
+    }
+
+    if (name) {
+      image.name = name;
+    }
+
+    const updatedImage = await AppDataSource.manager.save(image);
+
+    res.json({
+      success: true,
+      message: "Image updated successfully",
+      image: updatedImage,
+    });
+  } catch (error) {
+    console.error("Error updating image:", error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to update image",
+    });
+  }
+});
+
+app.delete("/images/:id", async (req: Request, res: Response) => {
+  try {
+    if (!AppDataSource.isInitialized) {
+      await AppDataSource.initialize();
+    }
+
+    const id = parseInt(req.params.id);
+    const image = await AppDataSource.manager.findOne(Image, {
+      where: { id },
+    });
+
+    if (!image) {
+      return res.status(404).json({
+        success: false,
+        error: "Image not found",
+      });
+    }
+
+    const key = image.url.split("/").pop();
+    if (key) {
+      const deleteParams = {
+        Bucket: process.env.AWS_S3_BUCKET!,
+        Key: key,
+      };
+      const command = new DeleteObjectCommand(deleteParams);
+      await s3.send(command);
+    }
+
+    await AppDataSource.manager.remove(image);
+
+    res.json({
+      success: true,
+      message: "Image deleted successfully",
+      deletedImage: {
+        id: id,
+        name: image.name,
+        url: image.url,
+      },
+    });
+  } catch (error) {
+    console.error("Error deleting image:", error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to delete image",
+    });
+  }
+});
 
 app.listen(port, async () => {
   try {
