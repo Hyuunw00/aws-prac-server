@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'http://localhost'; // EC2 URL로 변경 필요
+const API_BASE_URL = 'https://api.theo-test.com';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
