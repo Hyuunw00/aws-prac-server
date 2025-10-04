@@ -12,23 +12,23 @@ dotenv.config();
 const app = express();
 const port = 80;
 
-// const s3 = new S3Client({
-//   credentials: {
-//     accessKeyId: process.env.AWS_ACCESS_KEY!,
-//     secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
-//   },
-//   region: "ap-northeast-2",
-// });
+const s3 = new S3Client({
+  credentials: {
+    accessKeyId: process.env.AWS_ACCESS_KEY!,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
+  },
+  region: "ap-northeast-2",
+});
 
-// const upload = multer({
-//   storage: multerS3({
-//     s3: s3,
-//     bucket: process.env.AWS_S3_BUCKET!,
-//     key: function (_req, file, cb) {
-//       cb(null, file.originalname);
-//     },
-//   }),
-// });
+const upload = multer({
+  storage: multerS3({
+    s3: s3,
+    bucket: process.env.AWS_S3_BUCKET!,
+    key: function (_req, file, cb) {
+      cb(null, file.originalname);
+    },
+  }),
+});
 
 app.get("/", async (_req: Request, res: Response) => {
   try {
@@ -43,46 +43,50 @@ app.get("/", async (_req: Request, res: Response) => {
   }
 });
 
-// app.post("/upload", upload.array("photos"), async (req: Request, res: Response) => {
-//   try {
-//     if (!AppDataSource.isInitialized) {
-//       await AppDataSource.initialize();
-//     }
+app.post(
+  "/upload",
+  upload.array("photos"),
+  async (req: Request, res: Response) => {
+    try {
+      if (!AppDataSource.isInitialized) {
+        await AppDataSource.initialize();
+      }
 
-//     const uploadedFiles = [];
-//     const files = req.files as Express.MulterS3.File[];
+      const uploadedFiles = [];
+      const files = req.files as Express.MulterS3.File[];
 
-//     for (const file of files) {
-//       const image = new Image();
-//       image.name = file.originalname;
-//       image.url = file.location;
+      for (const file of files) {
+        const image = new Image();
+        image.name = file.originalname;
+        image.url = file.location;
 
-//       const savedImage = await AppDataSource.manager.save(image);
-//       console.log("fileRecord", savedImage);
+        const savedImage = await AppDataSource.manager.save(image);
+        console.log("fileRecord", savedImage);
 
-//       uploadedFiles.push({
-//         id: savedImage.id,
-//         name: savedImage.name,
-//         url: savedImage.url,
-//         createdAt: savedImage.createdAt,
-//         updatedAt: savedImage.updatedAt,
-//       });
-//     }
+        uploadedFiles.push({
+          id: savedImage.id,
+          name: savedImage.name,
+          url: savedImage.url,
+          createdAt: savedImage.createdAt,
+          updatedAt: savedImage.updatedAt,
+        });
+      }
 
-//     res.json({
-//       success: true,
-//       message: "파일 업로드 성공",
-//       count: uploadedFiles.length,
-//       files: uploadedFiles,
-//     });
-//   } catch (error) {
-//     console.error("Error saving to database:", error);
-//     res.status(500).json({
-//       success: false,
-//       error: "Failed to save file information to database",
-//     });
-//   }
-// });
+      res.json({
+        success: true,
+        message: "파일 업로드 성공",
+        count: uploadedFiles.length,
+        files: uploadedFiles,
+      });
+    } catch (error) {
+      console.error("Error saving to database:", error);
+      res.status(500).json({
+        success: false,
+        error: "Failed to save file information to database",
+      });
+    }
+  }
+);
 
 app.listen(port, async () => {
   try {
